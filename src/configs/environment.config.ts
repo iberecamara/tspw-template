@@ -81,14 +81,20 @@ const variables = {
 
   // Miscellanea
   JIRA_BOARD: Joi.string().allow(""),
-  ALLURE_REPORT_REMOVE_STATUS: (Joi.array()
-    .items(Joi.string())
-    .custom((value: unknown, helpers) => {
-      // Se vier do process.env como string, transformamos em array antes de validar
-      const stringValue = typeof value === 'string' ? value : '';
-      if (!stringValue) return [];
+  ALLURE_REPORT_REMOVE_STATUS: Joi.array()
+    .single()
+    .items(Joi.string().allow(''))
+    .custom((value: unknown[], helpers) => {
+      if (!value || value.length === 0 || value[0] === '') {
+        return [];
+      }
 
-      const statuses = stringValue.split(',').map((item: string) => item.trim());
+      let statuses: string[] = [];
+      if (value.length === 1 && typeof value[0] === 'string' && value[0].includes(',')) {
+        statuses = value[0].split(',').map((item: string) => item.trim());
+      } else {
+        statuses = value.map(item => String(item).trim());
+      }
 
       for (const status of statuses) {
         const { error } = Joi.string().valid(...VALID_ALLURE_STATUSES).validate(status);
@@ -99,7 +105,7 @@ const variables = {
         }
       }
       return statuses;
-    }) as unknown as Joi.ArraySchema),
+    }) as any,
 };
 
 const validationResult: Joi.ValidationResult = Joi.object<EnvVars, true>(
