@@ -1,0 +1,175 @@
+name: Vanilla Playwright Test Automation Framework template
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+env:
+  BASE_URL: https://www.template.com
+  APPLICATION: Template
+  WORKERS: 4
+  RETRIES: 2
+  LOG_LINE_LENGTH: 100
+  LOG_CONSOLE: true
+  LOG_LEVEL: debug
+  HEADLESS: true
+  JIRA_BOARD: TEMPLATE
+  SHARDS_TOTAL: 4
+
+jobs:
+  test:
+    name: Test (shard ${{ matrix.shardIndex }}/4)
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        shardIndex: [1, 2, 3, 4]
+    env:
+      SHARD_INDEX: ${{ matrix.shardIndex }}
+      SHARD_TOTAL: 4
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci --prefer-offline
+
+      - name: Cache Playwright browsers
+        uses: actions/cache@v5
+        id: pw-cache
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
+
+      - name: Install Playwright Browsers
+        run: npx playwright install --with-deps
+        if: steps.pw-cache.outputs.cache-hit != 'true'
+
+      - name: Install Playwright OS deps only
+        run: npx playwright install-deps
+        if: steps.pw-cache.outputs.cache-hit == 'true'
+
+      - name: Run Tests (shard ${{ matrix.shardIndex }}/${{ env.SHARDS_TOTAL }})
+        id: run-tests
+        run: npm test -- --shard=${{ matrix.shardIndex }}/${{ env.SHARDS_TOTAL }}
+        continue-on-error: true
+
+      - name: Upload raw Allure results (for merging)
+        uses: actions/upload-artifact@v7
+        if: ${{ !cancelled() }}
+        with:
+          name: allure-results-shard-${{ matrix.shardIndex }}
+          path: artifacts/reports/allure/allure-results
+          retention-days: 30
+          if-no-files-found: warn
+
+      - name: Upload logs (for merging)
+        uses: actions/upload-artifact@v7
+        if: ${{ !cancelled() }}
+        with:
+          name: automation-logs-shard-${{ matrix.shardIndex }}
+          path: artifacts/logs/**/**/*.log
+          retention-days: 30
+          if-no-files-found: warn
+
+      - name: Fail job if tests failed
+        if: steps.run-tests.outcome == 'failure'
+        run: |
+          echo "::error::Test suite failed for shard ${{ matrix.shardIndex }}/${{ env.SHARDS_TOTAL }}. See Allure Report/logs artifacts for details."
+          exit 1
+
+  merge-reports:
+    name: Merge logs and generate single-file Allure Report
+    needs: test
+    if: ${{ !cancelled() }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci --prefer-offline
+
+      - name: Download and merge Allure results from all shards
+        uses: actions/download-artifact@v6
+        with:
+          pattern: allure-results-*
+          path: artifacts/reports/allure/allure-results
+          merge-multiple: true
+
+      - name: Download and merge logs from all shards
+        uses: actions/download-artifact@v6
+        with:
+          pattern: automation-logs-*
+          path: artifacts/logs
+          merge-multiple: true
+
+      - name: Generate single file Allure Report (all shards combined)
+        run: npm run report:allure:export
+
+      - name: Upload Allure Report - Zipped File
+        uses: actions/upload-artifact@v7
+        if: ${{ !cancelled() }}
+        with:
+          name: Allure Report
+          path: artifacts/reports/allure/allure-report-single
+          retention-days: 30
+          overwrite: true
+          if-no-files-found: warn
+
+      - name: Upload logs
+        uses: actions/upload-artifact@v7
+        if: ${{ !cancelled() }}
+        with:
+          name: Automation Logs
+          path: artifacts/logs/**/**/*.log
+          retention-days: 30
+          if-no-files-found: warn
+
+      - name: Upload Report for Pages (build-time)
+        uses: actions/upload-pages-artifact@v4
+        if: ${{ !cancelled() }}
+        with:
+          path: artifacts/reports/allure/allure-report-single
+
+  deploy:
+    needs: merge-reports
+    if: ${{ !cancelled() && github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Setup Pages
+        uses: actions/configure-pages@v6
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v5

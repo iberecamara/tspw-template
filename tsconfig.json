@@ -1,0 +1,57 @@
+{
+    "compilerOptions": {
+        "module": "nodenext",
+        "moduleResolution": "nodenext",
+        "types": [
+            "node",
+            "playwright"
+        ],
+        "paths": {
+            "@api/*": [
+                "./src/api/*"
+            ],
+            "@components/*": [
+                "./src/pages/components/*"
+            ],
+            "@configs/*": [
+                "./src/configs/*"
+            ],
+            "@data/*": [
+                "./src/data/*"
+            ],
+            "@exceptions/*": [
+                "./src/exceptions/*"
+            ],
+            "@files/*": [
+                "./src/files/*"
+            ],
+            "@fixtures/*": [
+                "./src/fixtures/*"
+            ],
+            "@locators/*": [
+                "./src/locators/*"
+            ],
+            "@pages/*": [
+                "./src/pages/pages/*"
+            ],
+            "@pages.base/*": [
+                "./src/pages/*"
+            ],
+            "@steps/*": [
+                "./src/steps/*"
+            ],
+            "@utils/*": [
+                "./src/utils/*"
+            ]
+        }
+    },
+    "include": [
+        "src/**/*.ts",
+        "src/**/*.js",
+        "src/configs/eslint.config.mjs"
+    ],
+    "exclude": [
+        "node_modules",
+        "dist"
+    ]
+}
