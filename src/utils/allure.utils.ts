@@ -48,7 +48,7 @@ export class AllureUtils {
       }
     });
 
-    if (Environment.ALLURE_REPORT_REMOVE_STATUS) {
+    if (Environment.ALLURE_REPORT_REMOVE_STATUS && Environment.ALLURE_REPORT_REMOVE_STATUS.length > 0) {
       console.info(
         `Allure Results Cleanup complete, status results removed: '${Environment.ALLURE_REPORT_REMOVE_STATUS.join(", ")}'.`,
       );
