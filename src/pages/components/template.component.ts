@@ -1,14 +1,12 @@
-import { TempĺateComponentLocators } from "@locators/component/template.locators";
+import { TemplateComponentLocators } from "@locators/component/template.locators";
 import { BasePage } from "@pages.base/base.page";
 import { Page } from "@playwright/test";
 
 export class TemplateComponent extends BasePage {
-
-  readonly locators: TempĺateComponentLocators;
+  readonly locators: TemplateComponentLocators;
 
   constructor(page: Page) {
     super(page);
-    this.locators = new TempĺateComponentLocators(page);
+    this.locators = new TemplateComponentLocators(page);
   }
-
 }

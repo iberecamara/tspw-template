@@ -6,5 +6,4 @@ export class TemplateApi {
   constructor(request: APIRequestContext) {
     this.request = request;
   }
-
 }

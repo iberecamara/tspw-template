@@ -1,3 +1,4 @@
+import { Status } from "allure-js-commons";
 import { config } from "dotenv";
 import Joi from "joi";
 
@@ -10,14 +11,6 @@ config({
   quiet: true,
   override: true,
 });
-
-const VALID_ALLURE_STATUSES = [
-  "passed",
-  "failed",
-  "broken",
-  "skipped",
-  "unknown",
-];
 
 interface EnvVars {
   // Playwright variables
@@ -46,7 +39,7 @@ interface EnvVars {
 
   // Miscellanea
   JIRA_BOARD?: string;
-  ALLURE_REPORT_REMOVE_STATUS?: string[];
+  ALLURE_REPORT_REMOVE_STATUS: Status;
 }
 
 const variables = {
@@ -81,31 +74,10 @@ const variables = {
 
   // Miscellanea
   JIRA_BOARD: Joi.string().allow(""),
-  ALLURE_REPORT_REMOVE_STATUS: Joi.array()
-    .single()
-    .items(Joi.string().allow(''))
-    .custom((value: unknown[], helpers) => {
-      if (!value || value.length === 0 || value[0] === '') {
-        return [];
-      }
-
-      let statuses: string[] = [];
-      if (value.length === 1 && typeof value[0] === 'string' && value[0].includes(',')) {
-        statuses = value[0].split(',').map((item: string) => item.trim());
-      } else {
-        statuses = value.map(item => String(item).trim());
-      }
-
-      for (const status of statuses) {
-        const { error } = Joi.string().valid(...VALID_ALLURE_STATUSES).validate(status);
-        if (error) {
-          return helpers.error('any.invalid', {
-            message: `'VALID_ALLURE_STATUSES' contém o valor inválido: '${status}'.`
-          });
-        }
-      }
-      return statuses;
-    }) as any,
+  ALLURE_REPORT_REMOVE_STATUS: Joi.string()
+    .empty("")
+    .valid("passed", "failed", "broken", "skipped")
+    .default(""),
 };
 
 const validationResult: Joi.ValidationResult = Joi.object<EnvVars, true>(
@@ -138,9 +110,9 @@ export class Environment {
   static readonly VIEWPORT: Viewport | null =
     envValues.VIEWPORT_HEIGHT && envValues.VIEWPORT_WIDTH
       ? {
-        height: envValues.VIEWPORT_HEIGHT,
-        width: envValues.VIEWPORT_WIDTH,
-      }
+          height: envValues.VIEWPORT_HEIGHT,
+          width: envValues.VIEWPORT_WIDTH,
+        }
       : null;
 
   static readonly APPLICATION: string = envValues.APPLICATION;
@@ -167,6 +139,6 @@ export class Environment {
     return `${Environment.PROJECT_TAG}-${id}`;
   };
 
-  static readonly ALLURE_REPORT_REMOVE_STATUS: string[] =
-    envValues.ALLURE_REPORT_REMOVE_STATUS ?? [];
+  static readonly ALLURE_REPORT_REMOVE_STATUS: Status =
+    envValues.ALLURE_REPORT_REMOVE_STATUS;
 }

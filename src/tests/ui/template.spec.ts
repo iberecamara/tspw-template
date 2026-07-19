@@ -9,11 +9,7 @@ test.describe(
     test(
       "Template test",
       { tag: ["@TEMPLATE-0000", "@TC-UI-0000"] },
-      async ({
-        templateSteps,
-      }) => {
-
-      },
+      async ({ templateSteps }) => {},
     );
   },
 );

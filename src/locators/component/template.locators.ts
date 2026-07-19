@@ -1,7 +1,6 @@
 import { Page } from "@playwright/test";
 
-export class TempĺateComponentLocators {
-
+export class TemplateComponentLocators {
   readonly page: Page;
 
   constructor(page: Page) {

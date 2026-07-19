@@ -131,7 +131,7 @@ You can also create environment-specific files, e.g. `.env.qa`, `.env.uat`. The 
 | `LOG_TIMESTAMP_FORMAT` | No | `YYYY-MM-DD HH:mm:ss` | Timestamp format used in log lines. |
 | `LOG_LINE_LENGTH` | No | `100` | Width of the `****`/`####` separator lines in log output. |
 | `JIRA_BOARD` | No | `''` | Prefix used to build Jira tags (e.g. `SET_JIRA_TAG(15)` → `@TEMPLATE-15`). |
-| `ALLURE_REPORT_REMOVE_STATUS` | No | `[]` | Comma-separated list of Allure result statuses to strip from the report before publishing, e.g. `passed,skipped`. Valid values: `passed`, `failed`, `broken`, `skipped`, `unknown`. |
+| `ALLURE_REPORT_REMOVE_STATUS` | No | `''` | Allure result status to strip from the report before publishing, e.g. `passed,skipped`. Valid values: `passed`, `failed`, `broken`, `skipped`. |
 | `SHARD_INDEX` / `SHARD_TOTAL` | No | `''` | Set automatically by CI when splitting the suite across shards — you generally won't set these locally. |
 
 ---

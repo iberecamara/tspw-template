@@ -4,7 +4,7 @@ import {
   ALLURE_REPORT_SINGLE_FILE_DIR,
   ALLURE_RESULTS_DIR,
 } from "@configs/paths";
-import { EMPTY, NEWLINE } from "@data/constants/constants";
+import { NEWLINE } from "@data/constants/constants";
 import type { Attachment, TestResult } from "allure-js-commons";
 import * as fs from "fs";
 import { execSync } from "node:child_process";
@@ -28,9 +28,7 @@ export class AllureUtils {
           const testResult: TestResult = JSON.parse(fileContent) as TestResult;
           if (
             Environment.ALLURE_REPORT_REMOVE_STATUS &&
-            Environment.ALLURE_REPORT_REMOVE_STATUS.includes(
-              testResult.status ?? EMPTY,
-            )
+            Environment.ALLURE_REPORT_REMOVE_STATUS === testResult.status
           ) {
             fs.unlinkSync(filePath);
             if (testResult.attachments) {
@@ -48,9 +46,9 @@ export class AllureUtils {
       }
     });
 
-    if (Environment.ALLURE_REPORT_REMOVE_STATUS && Environment.ALLURE_REPORT_REMOVE_STATUS.length > 0) {
+    if (Environment.ALLURE_REPORT_REMOVE_STATUS) {
       console.info(
-        `Allure Results Cleanup complete, status results removed: '${Environment.ALLURE_REPORT_REMOVE_STATUS.join(", ")}'.`,
+        `Allure Results Cleanup complete, status results removed: '${Environment.ALLURE_REPORT_REMOVE_STATUS}'.`,
       );
     } else {
       console.info("Allure Results Cleanup will not be executed.");
