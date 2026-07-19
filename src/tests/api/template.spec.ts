@@ -7,7 +7,7 @@ test.describe(
   },
   () => {
     test(
-      "Get All Brands List",
+      "Template test",
       { tag: ["@TEMPLATE-0000", "@TC-API-0000"] },
       async ({ templateApiSteps }) => {
 
