@@ -29,7 +29,7 @@
                 "./src/fixtures/*"
             ],
             "@locators/*": [
-                "./src/locators/*"
+                "./src/pages/locators/*"
             ],
             "@pages/*": [
                 "./src/pages/pages/*"
